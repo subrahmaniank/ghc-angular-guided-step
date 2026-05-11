@@ -40,13 +40,14 @@ For each component, identify:
 - nearby spec file
 - existing test coverage evidence, if available
 
-Expected spec file naming is usually:
+Expected spec file naming is usually one of:
 
 ```text
+<component-name>.spec.ts
 <component-name>.component.spec.ts
 ```
 
-or the naming convention already used in the repository.
+or another naming convention already used in the repository.
 
 ## Component-to-Spec Mapping
 
@@ -90,9 +91,7 @@ Use `missing` when:
 Use `exists-good-enough` when:
 
 - a spec file exists
-- it `missing` when:
-
-- no matching or has meaningful behavior-based tests
+- it has meaningful behavior-based tests
 - it mocks required dependencies correctly
 - there is no obvious need for updates
 

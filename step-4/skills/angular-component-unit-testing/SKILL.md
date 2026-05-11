@@ -1,6 +1,6 @@
 ---
 name: angular-component-unit-testing
-description: Use this skill when creating or updating Angular component unit tests for one component, including Angular 21 TestBed setup, standalone component imports, Vitest syntax, router testing, signals, DOM assertions, and zoneless change detection.
+description: Use this skill when generating, updating, reviewing, or fixing Angular component unit tests using Angular 21, TestBed, standalone components, Vitest, signals, router testing, DOM assertions, and zoneless change detection.
 ---
 
 # Angular Component Unit Testing Skill
@@ -84,7 +84,7 @@ Use this as the default structure:
 ```ts
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ComponentUnderTest } from './component-under-test';
 
@@ -218,6 +218,66 @@ Avoid assertions against:
 - layout-only classes
 - deeply nested implementation-specific DOM
 - styles that do not represent user-visible behavior
+
+## Template & Projection Pitfalls
+
+Tests commonly fail due to HTML parsing and projection issues. Add the following checklist and patterns to avoid common errors (NG5002, NG8001, NG8002, TS6133):
+
+- Check `ng-content` selectors in the component template before writing a host template.
+- NEVER use standard HTML void/reserved element names (for example: `link`, `meta`, `img`, `input`, `br`, `hr`, `area`, `base`, `col`, `embed`, `param`, `source`, `track`, `wbr`) as element selectors with end-tags in inline test templates — browsers and the Angular template parser treat these as void elements and will emit `NG5002` or bundle-time parser errors.
+- If a component uses reserved element selectors (e.g. `select="link"`), prefer one of these approaches:
+  - Refactor the component to use an attribute selector (recommended) such as `ng-content select="[card-link]"` or a prefixed element name (`app-link`) so tests and the HTML parser are safe.
+  - Use a runtime projection approach (create the host/component fixture first, then append safe DOM nodes programmatically) rather than placing the reserved tag in an inline host template.
+
+### Safe projection patterns for tests
+
+- Preferred: change component to use attribute selectors for `ng-content` where practical. Example: `ng-content select="[heading]"`.
+- If you cannot change the component, use runtime projection instead of inline markup. Example:
+
+```ts
+const host = TestBed.createComponent(TestHostComponent);
+host.detectChanges();
+const card = host.nativeElement.querySelector('app-card');
+const safeEl = document.createElement('div');
+safeEl.setAttribute('data-heading', '');
+safeEl.textContent = 'Heading text';
+card.appendChild(safeEl);
+host.detectChanges();
+```
+
+### Avoid unknown-element compilation errors (NG8001 / NG8002)
+
+- Prefer a `TestHostComponent` that is `standalone: true` and imports the tested component. Then configure TestBed with the host in `imports`. This ensures Angular knows about the tested component and its inputs.
+
+Example pattern:
+
+```ts
+@Component({
+  standalone: true,
+  imports: [CardComponent],
+  template: `<app-card [href]="href"></app-card>`,
+})
+class TestHostComponent { href = ''; }
+
+await TestBed.configureTestingModule({ imports: [TestHostComponent], providers: [provideZonelessChangeDetection()] }).compileComponents();
+```
+
+- Only use `NO_ERRORS_SCHEMA` or `CUSTOM_ELEMENTS_SCHEMA` as a last resort — prefer explicit `imports` to make tests stricter and safer.
+
+### Projection assertions guidance
+
+- Prefer asserting the presence of projection containers and attributes (for example `.card__heading`, `.card__link`, `.card__container`, `href`, `target`) rather than exact innerText of custom projected element tags. Text projection can be brittle and environment-dependent.
+- If the test must assert projected text, use programmatic insertion of safe child nodes (see runtime projection example) and assert against those safe nodes.
+
+### Quick troubleshooting mapping
+
+- `NG5002` — caused by using void/reserved elements with closing tags in templates; remove end tags, use a different element name, or project at runtime.
+- `NG8001` / `NG8002` — component or input not recognized; include the component in `imports` of the host or add the host to TestBed `imports`.
+- `TS6133` — unused variables; remove unused `querySelector` results or use them in assertions.
+
+### One-line checklist before writing tests
+
+- Confirm selectors are safe (not using void/reserved element names) → prefer attribute selectors or prefixed elements → choose host pattern (standalone host imports tested component) → avoid inline reserved-tag projection → prefer runtime projection when needed → assert containers & attributes, not fragile innerText.
 
 ## What to Test
 

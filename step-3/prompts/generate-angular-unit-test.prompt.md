@@ -1,5 +1,5 @@
 ---
-description: Generate, run, fix, and validate Angular unit tests for a component with at least 60% coverage.
+description: Generate and validate Angular unit tests for a component using Step 3 skills.
 agent: agent
 ---
 
@@ -7,7 +7,7 @@ agent: agent
 
 Generate or update a unit test for the Angular component provided as input.
 
-Apply these skills when relevant:
+Apply these skills:
 
 - `/angular-component-unit-testing`
 - `/angular-test-mocking-coverage`
@@ -20,166 +20,38 @@ ${input:componentName:Enter the Angular component class name or component file p
 
 ## Objective
 
-Create or update the unit test for the target Angular component.
+Create or update the unit test for the target Angular component and complete validation until the work is in a shippable state.
 
-The completed work must:
+Use skills as the source of truth for:
 
-- create or update the correct `*.spec.ts` file
-- mock required services and tokens appropriately
-- run the test coverage command
-- fix test failures
-- ensure at least 60% coverage for the target component or affected unit under test
-- report the final result clearly
+- Angular 21 + Vitest test setup patterns
+- mocking and dependency handling
+- test execution and rerun flow
+- failure diagnosis and repair loop
+- coverage threshold and improvement strategy
+- final reporting format
 
-## Mandatory Agent Workflow
+## Mandatory Workflow
 
-Complete the following workflow.
+1. Resolve the target component.
+   - If input is a file path, use it directly.
+   - If input is a class name, locate the matching Angular component.
+   - Identify component source files and existing spec file if present.
 
-### 1. Resolve the target component
+2. Inspect the component before writing tests.
+   - Review template and component behavior.
+   - Identify dependencies, inputs/outputs, signals, router usage, observables, forms, and side effects.
+   - Check nearby tests for local conventions.
 
-If the input is a file path, use that file directly.
+3. Create or update the spec file.
+   - Place it next to the component.
+   - Follow existing naming conventions.
+   - Keep changes scoped; do not create unrelated files.
 
-If the input is a component class name, search the workspace for the matching Angular component.
+4. Execute the full validate/fix cycle.
+   - Follow `/angular-test-mocking-coverage` for command execution, failure handling, and coverage validation.
 
-Identify:
+5. Return final results.
+   - Use the reporting format defined by `/angular-test-mocking-coverage`.
 
-- component TypeScript file
-- template file, if present
-- style file, if relevant
-- existing spec file, if present
-- related dependencies used by the component
-
-### 2. Inspect the component before writing tests
-
-Before creating or changing the spec file, inspect the component implementation.
-
-Look for:
-
-- constructor dependencies
-- `inject(...)` dependencies
-- injected tokens
-- Angular Router usage
-- signals
-- inputs
-- outputs
-- observables
-- forms
-- lifecycle hooks
-- template bindings
-- child components
-- custom elements
-- conditional rendering
-- service side effects
-
-Also check nearby existing tests for project-specific testing style.
-
-### 3. Create or update the spec file
-
-Create or update the unit test next to the component under test.
-
-Use the existing naming convention, usually:
-
-```text
-<component-name>.spec.ts
-```
-
-Do not create unrelated files.
-
-Do not modify production code unless there is a clear production bug and the user explicitly asks for that change.
-
-### 4. Use the Angular testing skills
-
-Use `/angular-component-unit-testing` for:
-
-- Angular 21 TestBed setup
-- standalone component imports
-- zoneless change detection
-- router setup
-- DOM assertions
-- signal assertions
-- component behavior tests
-
-Use `/angular-test-mocking-coverage` for:
-
-- service mocks
-- injected token mocks
-- observable mocks
-- router mocks
-- failure diagnosis
-- coverage improvement
-- rerunning tests after fixes
-
-### 5. Run the tests
-
-After creating or modifying the spec file, run:
-
-```bash
-npm run test:coverage
-```
-
-### 6. Fix failures
-
-If the test command fails:
-
-1. Inspect the actual error output.
-2. Identify the root cause.
-3. Fix the test or test setup.
-4. Do not weaken meaningful assertions just to make tests pass.
-5. Do not delete useful tests to hide failures.
-6. Rerun:
-
-```bash
-npm run test:coverage
-```
-
-Continue until the command passes or there is a clear remaining issue that cannot be fixed safely.
-
-### 7. Verify coverage
-
-Confirm that coverage for the target component or affected unit under test is at least 60%.
-
-If coverage is below 60%:
-
-1. Inspect the uncovered lines, branches, or functions.
-2. Add meaningful behavior-based tests.
-3. Mock dependencies as needed.
-4. Rerun:
-
-```bash
-npm run test:coverage
-```
-
-Do not add low-value tests only to inflate coverage.
-
-### 8. Final response
-
-When finished, respond using this format:
-
-```md
-## Result
-
-Created or updated:
-
-- `<spec file path>`
-
-Validated with:
-
-```bash
-npm run test:coverage
-```
-
-Status:
-
-- `<Passed | Failed | Could not run>`
-
-Coverage:
-
-- Target component coverage: `<coverage result>`
-- Required minimum: 60%
-
-Notes:
-
-- `<brief explanation of important mocks, assertions, fixes, or remaining issues>`
-```
-
-Do not claim success unless the command actually passed and the coverage requirement was met.
+Do not duplicate skill-level implementation rules inside this prompt.
